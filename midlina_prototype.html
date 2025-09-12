@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="is">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Miðlínur – Létt prótótýpa</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+    .pane {
+      position: absolute; top: 10px; left: 10px; z-index: 1000;
+      background: rgba(255,255,255,0.95); padding: 10px 12px; border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15); max-width: 320px; font-family: system-ui, Arial, sans-serif;
+    }
+    .pane h3 { margin: 0 0 6px 0; font-size: 16px; }
+    .pane label { display: block; font-size: 12px; margin-top: 6px; }
+    .pane input, .pane select { width: 100%; padding: 6px; font-size: 12px; }
+    .row { display: flex; gap: 6px; margin-top: 8px; }
+    .row button, .pane button { flex: 1; padding: 8px; font-size: 12px; cursor: pointer; }
+    .muted { color: #555; font-size: 12px; }
+    .badge { display:inline-block; padding:2px 6px; border-radius: 4px; background:#eee; margin-left:6px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="pane">
+    <h3>Miðlínuverkfæri <span id="totalLen" class="badge">0.000 km</span></h3>
+    <div class="muted">Teiknaðu línu, smelltu síðan á hana til að velja og setja eiginleika.</div>
+    <label>Tegund (Type)</label>
+    <select id="type">
+      <option value="solid">Heil</option>
+      <option value="dashed">Strikalína</option>
+      <option value="double">Tvöföld</option>
+    </select>
+    <label>Breidd (m)</label>
+    <input id="width" type="number" min="0" step="0.05" value="0.15">
+    <label>Staða</label>
+    <select id="status">
+      <option value="planned">Áætlað</option>
+      <option value="in-progress">Í vinnslu</option>
+      <option value="done">Lokið</option>
+    </select>
+    <div class="row">
+      <button id="apply">Vista á valda línu</button>
+      <button id="clear">Hreinsa val</button>
+    </div>
+    <div class="row" style="margin-top:4px">
+      <button id="exportGeo">Sækja GeoJSON</button>
+      <button id="exportCsv">Sækja CSV</button>
+    </div>
+    <div class="row" style="margin-top:4px">
+      <input id="importGeo" type="file" accept=".json,.geojson" style="flex:2">
+      <button id="loadBtn" style="flex:1">Hlaða</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+  <script>
+    // Map setup centered on Iceland
+    const map = L.map('map').setView([64.9631, -19.0208], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // Vector layer
+    const drawn = new L.FeatureGroup();
+    map.addLayer(drawn);
+
+    // Draw control (polyline only)
+    const drawControl = new L.Control.Draw({
+      draw: {
+        polygon: false, rectangle: false, circle: false, marker: false, circlemarker: false,
+        polyline: { shapeOptions: { color: '#f2c200', weight: 5, dashArray: '8 6' } }
+      },
+      edit: { featureGroup: drawn, edit: true, remove: true }
+    });
+    map.addControl(drawControl);
+
+    let selected = null;
+
+    function updateTotal() {
+      let totalKm = 0;
+      drawn.eachLayer(l => {
+        if (l instanceof L.Polyline) {
+          const coords = l.getLatLngs().map(ll => [ll.lng, ll.lat]);
+          const line = turf.lineString(coords);
+          totalKm += turf.length(line, {units:'kilometers'});
+        }
+      });
+      document.getElementById('totalLen').textContent = totalKm.toFixed(3) + ' km';
+    }
+
+    function styleFromProps(layer) {
+      const p = layer.feature && layer.feature.properties ? layer.feature.properties : {};
+      const type = p.type || 'solid';
+      let opts = { color:'#f2c200', weight:5 };
+      if (type === 'dashed') opts.dashArray = '8 6';
+      if (type === 'double') {
+        // Simple visual trick for double line: outline + inner
+        layer.setStyle({ color:'#000', weight:7 });
+        const inner = L.polyline(layer.getLatLngs(), { color:'#f2c200', weight:3 }).addTo(drawn);
+        inner._isInner = true; inner._parent = layer;
+      } else {
+        // Remove any previous "inner" twins
+        drawn.eachLayer(l => { if (l._isInner && l._parent === layer) { drawn.removeLayer(l); } });
+        layer.setStyle(opts);
+      }
+    }
+
+    function clearSelection() {
+      if (selected && selected.setStyle) selected.setStyle({opacity:1});
+      selected = null;
+    }
+
+    map.on(L.Draw.Event.CREATED, e => {
+      const layer = e.layer;
+      // Default properties
+      layer.feature = { type:"Feature", properties: { type:"dashed", width:0.15, status:"planned" } };
+      drawn.addLayer(layer);
+      updateTotal();
+    });
+
+    map.on(L.Draw.Event.EDITED, updateTotal);
+    map.on(L.Draw.Event.DELETED, () => { clearSelection(); updateTotal(); });
+
+    // Click to select
+    map.on('click', () => { if (!map._lastFromLineClick) clearSelection(); map._lastFromLineClick=false; });
+    function attachClick(l) {
+      l.on('click', (ev) => {
+        map._lastFromLineClick = true;
+        clearSelection();
+        selected = l;
+        l.setStyle({opacity: 0.6});
+        // populate form
+        const p = l.feature && l.feature.properties ? l.feature.properties : {};
+        document.getElementById('type').value = p.type || 'dashed';
+        document.getElementById('width').value = p.width ?? 0.15;
+        document.getElementById('status').value = p.status || 'planned';
+      });
+    }
+    drawn.on('layeradd', e => attachClick(e.layer));
+
+    // Apply attributes
+    document.getElementById('apply').onclick = () => {
+      if (!selected) { alert('Veldu línu fyrst.'); return; }
+      const p = selected.feature.properties || {};
+      p.type = document.getElementById('type').value;
+      p.width = Number(document.getElementById('width').value);
+      p.status = document.getElementById('status').value;
+      selected.feature.properties = p;
+      // Restyle
+      if (p.type === 'double') {
+        selected.setStyle({ color:'#000', weight:7, dashArray:null });
+        // Remove previous inner if any, then add new
+        drawn.eachLayer(l => { if (l._isInner && l._parent === selected) { drawn.removeLayer(l); } });
+        const inner = L.polyline(selected.getLatLngs(), { color:'#f2c200', weight:3 }).addTo(drawn);
+        inner._isInner = true; inner._parent = selected;
+      } else {
+        drawn.eachLayer(l => { if (l._isInner && l._parent === selected) { drawn.removeLayer(l); } });
+        selected.setStyle({ color:'#f2c200', weight:5, dashArray: p.type==='dashed' ? '8 6' : null });
+      }
+    };
+    document.getElementById('clear').onclick = clearSelection;
+
+    // Export GeoJSON
+    document.getElementById('exportGeo').onclick = () => {
+      const fc = { type:"FeatureCollection", features:[] };
+      drawn.eachLayer(l => {
+        if (l._isInner) return; // skip inner lines for double visualization
+        if (l instanceof L.Polyline) {
+          const coords = l.getLatLngs().map(ll => [ll.lng, ll.lat]);
+          const props = Object.assign({}, (l.feature && l.feature.properties) || {});
+          // add derived length_km
+          const line = turf.lineString(coords);
+          props.length_km = turf.length(line, {units:'kilometers'});
+          fc.features.push({ type:"Feature", geometry:{ type:"LineString", coordinates: coords }, properties: props });
+        }
+      });
+      const blob = new Blob([JSON.stringify(fc, null, 2)], {type:"application/geo+json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'midlinur.geojson'; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Export CSV
+    document.getElementById('exportCsv').onclick = () => {
+      let rows = [['id','length_km','type','width_m','status']];
+      let i = 1;
+      drawn.eachLayer(l => {
+        if (l._isInner) return;
+        if (l instanceof L.Polyline) {
+          const coords = l.getLatLngs().map(ll => [ll.lng, ll.lat]);
+          const props = (l.feature && l.feature.properties) || {};
+          const line = turf.lineString(coords);
+          const lenKm = turf.length(line, {units:'kilometers'});
+          rows.push([i++, lenKm.toFixed(3), props.type || '', props.width ?? '', props.status || '']);
+        }
+      });
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const blob = new Blob([csv], {type:"text/csv"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'midlinur_yfirlit.csv'; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Import GeoJSON
+    document.getElementById('loadBtn').onclick = () => {
+      const input = document.getElementById('importGeo');
+      if (!input.files || !input.files[0]) { alert('Veldu GeoJSON-skrá.'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const geo = JSON.parse(reader.result);
+          if (geo.type !== 'FeatureCollection') throw new Error('Ekki FeatureCollection');
+          L.geoJSON(geo, {
+            style: f => ({
+              color: '#f2c200',
+              weight: 5,
+              dashArray: f.properties?.type === 'dashed' ? '8 6' : null
+            }),
+            onEachFeature: (feature, layer) => {
+              layer.feature = feature;
+              drawn.addLayer(layer);
+              attachClick(layer);
+            }
+          });
+          updateTotal();
+        } catch (e) {
+          alert('Villa við lestur GeoJSON: ' + e.message);
+        }
+      };
+      reader.readAsText(input.files[0]);
+    };
+
+    // Update total after any change
+    drawn.on('layeradd', updateTotal);
+    drawn.on('layerremove', updateTotal);
+  </script>
+</body>
+</html>
