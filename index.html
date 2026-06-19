@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ÍA-1 · Mótsdagskrá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gull:#FFCB05;      /* ÍA gulur */
+    --gull-dökk:#E0A800;
+    --svart:#111110;
+    --svart-2:#1c1b18;
+    --svart-3:#262521;
+    --hvitt:#FAF8F2;
+    --grar:#9a978d;
+    --grar-ljos:#cfccc2;
+    --live:#ff3b30;
+    --gront:#2ecc71;
+    --lina:rgba(255,255,255,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--svart);
+    color:var(--hvitt);
+    line-height:1.45;
+    padding-bottom:48px;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+  /* ---- Haus ---- */
+  header{
+    position:relative;
+    padding:30px 16px 26px;
+    text-align:center;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(255,203,5,.18), transparent 60%),
+      var(--svart);
+    border-bottom:3px solid var(--gull);
+  }
+  .crest{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:54px;height:54px;border-radius:50%;
+    background:var(--gull);color:var(--svart);
+    font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px;
+    letter-spacing:-1px;margin-bottom:10px;
+    box-shadow:0 6px 22px rgba(255,203,5,.35);
+  }
+  header h1{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:800;font-size:40px;line-height:.95;
+    letter-spacing:.5px;text-transform:uppercase;
+  }
+  header h1 .un{color:var(--gull)}
+  header .sub{
+    margin-top:6px;color:var(--grar);
+    font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  }
+
+  /* ---- Næsti leikur ---- */
+  .next{
+    margin:18px 0 8px;
+    background:linear-gradient(160deg,var(--gull),var(--gull-dökk));
+    color:var(--svart);
+    border-radius:20px;padding:18px 18px 16px;
+    box-shadow:0 14px 40px rgba(255,203,5,.18);
+    position:relative;overflow:hidden;
+  }
+  .next::after{
+    content:"";position:absolute;right:-40px;top:-40px;
+    width:160px;height:160px;border-radius:50%;
+    background:rgba(255,255,255,.18);
+  }
+  .next .eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    opacity:.75;display:flex;align-items:center;gap:7px;
+  }
+  .pulse{width:8px;height:8px;border-radius:50%;background:var(--svart);
+    animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+  .next .vs{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:30px;line-height:1.02;margin:8px 0 2px;
+    position:relative;z-index:1;
+  }
+  .next .meta{font-size:13px;font-weight:600;opacity:.8;position:relative;z-index:1}
+  .next .clock{
+    margin-top:12px;display:flex;align-items:baseline;gap:10px;
+    position:relative;z-index:1;
+  }
+  .next .ctime{
+    font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:34px;
+    letter-spacing:.5px;
+  }
+  .next .cdown{font-size:13px;font-weight:600;opacity:.7}
+  .next.none{background:var(--svart-2);color:var(--grar-ljos);box-shadow:none;border:1px solid var(--lina)}
+  .next.none::after{display:none}
+
+  /* ---- Sía ---- */
+  .filter{
+    display:flex;gap:8px;margin:14px 0 4px;
+  }
+  .filter button{
+    flex:1;padding:10px;border:1px solid var(--lina);
+    background:var(--svart-2);color:var(--grar-ljos);
+    border-radius:12px;font-family:inherit;font-size:13px;font-weight:600;
+    cursor:pointer;transition:.15s;
+  }
+  .filter button.on{background:var(--gull);color:var(--svart);border-color:var(--gull)}
+
+  /* ---- Dagar ---- */
+  .day-h{
+    position:sticky;top:0;z-index:5;
+    background:var(--svart);
+    padding:18px 0 8px;
+    display:flex;align-items:baseline;gap:10px;
+  }
+  .day-h .dnum{
+    font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:var(--gull);
+  }
+  .day-h .dname{font-size:13px;font-weight:600;color:var(--grar);text-transform:uppercase;letter-spacing:.08em}
+  .day-h .count{margin-left:auto;font-size:12px;color:var(--grar)}
+
+  /* ---- Leikjaspjald ---- */
+  .card{
+    display:flex;align-items:center;gap:14px;
+    background:var(--svart-2);border:1px solid var(--lina);
+    border-radius:14px;padding:13px 14px;margin-bottom:9px;
+    position:relative;transition:.15s;
+  }
+  .card.ia{border-left:3px solid var(--gull)}
+  .card.done{opacity:.4}
+  .card.live-now{border-color:var(--live);box-shadow:0 0 0 1px var(--live), 0 8px 26px rgba(255,59,48,.2)}
+  .time{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:26px;line-height:1;min-width:58px;text-align:center;color:var(--hvitt);
+  }
+  .card.done .time{color:var(--grar)}
+  .div{width:1px;align-self:stretch;background:var(--lina)}
+  .body{flex:1;min-width:0}
+  .match{font-size:15px;font-weight:600;line-height:1.25}
+  .match .me{color:var(--gull)}
+  .match .opp{color:var(--hvitt)}
+  .meet{
+    margin-top:5px;font-size:13px;font-weight:700;color:var(--gull);
+    display:flex;align-items:center;gap:5px;
+  }
+  .card.done .meet{color:var(--grar)}
+  .row2{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
+  .chip{
+    font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;
+    background:var(--svart-3);color:var(--grar-ljos);
+  }
+  .chip.field{color:var(--gull)}
+  .chip.live{background:var(--live);color:#fff}
+  .chip.evt{background:var(--svart-3);color:var(--grar-ljos)}
+
+  /* ---- Viðburður (matur ofl) ---- */
+  .event{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 14px;margin-bottom:9px;
+    border:1px dashed var(--lina);border-radius:14px;
+    background:transparent;color:var(--grar-ljos);
+  }
+  .event .time{font-size:22px;min-width:58px;color:var(--grar)}
+  .event .lbl{font-size:14px;font-weight:600}
+  .event .emoji{font-size:18px}
+
+  .tv-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:8px;text-decoration:none;
+    background:var(--live);color:#fff;font-size:12px;font-weight:700;
+    padding:7px 12px;border-radius:10px;
+  }
+
+  /* ---- Skor ---- */
+  .score{display:flex;align-items:center;gap:8px;margin-top:9px}
+  .score-lbl{font-size:11px;color:var(--grar);font-weight:600}
+  .score-in{
+    width:42px;height:40px;text-align:center;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:23px;
+    background:var(--svart-3);color:var(--hvitt);
+    border:1px solid var(--lina);border-radius:9px;-moz-appearance:textfield;
+  }
+  .score-in::-webkit-outer-spin-button,.score-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .score-in:focus{outline:none;border-color:var(--gull)}
+  .score-sep{color:var(--grar);font-weight:700;font-size:18px}
+  .score-static{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;color:var(--hvitt);
+  }
+  .result-chip{
+    font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;margin-left:auto;
+  }
+  .result-chip.win{background:var(--gront);color:#06301a}
+  .result-chip.loss{background:var(--live);color:#fff}
+  .result-chip.draw{background:var(--svart-3);color:var(--grar-ljos)}
+
+  /* ---- Stig ---- */
+  .points{
+    display:flex;align-items:center;gap:10px;
+    background:var(--svart-2);border:1px solid var(--lina);border-left:3px solid var(--gull);
+    border-radius:12px;padding:12px 14px;margin-top:9px;
+  }
+  .points .pnum{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:32px;color:var(--gull);line-height:1}
+  .points .plbl{font-size:15px;font-weight:700;color:var(--hvitt)}
+  .points .phint{margin-left:auto;font-size:11px;color:var(--grar);text-align:right;line-height:1.3}
+
+  /* ---- Samantekt ---- */
+  .summary{display:flex;gap:8px;margin:14px 0 2px}
+  .stat{
+    flex:1;background:var(--svart-2);border:1px solid var(--lina);
+    border-radius:12px;padding:11px 6px;text-align:center;
+  }
+  .stat .num{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:28px;line-height:1}
+  .stat .lbl{font-size:11px;color:var(--grar);font-weight:600;margin-top:3px}
+  .stat.w .num{color:var(--gront)}
+  .stat.l .num{color:var(--live)}
+  .goals-line{text-align:center;font-size:12px;color:var(--grar);margin-top:8px;font-weight:600}
+  .goals-line b{color:var(--gull)}
+
+  /* ---- Næst á dagskrá ---- */
+  .upnext{
+    display:flex;align-items:center;gap:12px;
+    background:var(--svart-2);border:1px solid var(--lina);
+    border-radius:14px;padding:12px 14px;margin-top:9px;
+  }
+  .upnext .un-emoji{font-size:22px}
+  .upnext .un-body{flex:1;min-width:0}
+  .upnext .un-lbl-sm{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--grar)}
+  .upnext .un-title{font-size:15px;font-weight:600;color:var(--hvitt);margin-top:2px}
+  .upnext .un-time{
+    font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;color:var(--gull);text-align:right;line-height:1;
+  }
+  .upnext .un-cd{font-size:11px;color:var(--grar);font-weight:600;text-align:right;margin-top:2px}
+
+  /* ---- Uppfæra ---- */
+  .refresh-row{display:flex;justify-content:flex-end;margin-top:12px}
+  .refresh{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--svart-2);color:var(--gull);
+    border:1px solid var(--lina);border-radius:999px;
+    padding:8px 15px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .refresh:active{background:var(--svart-3)}
+  .refresh .ico{display:inline-block;font-size:15px}
+  .refresh.spin .ico{animation:spin .6s linear}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+  /* ---- Sjá fyrri ---- */
+  .show-past{
+    display:block;width:100%;margin:14px 0 4px;
+    background:transparent;color:var(--grar-ljos);
+    border:1px dashed var(--lina);border-radius:12px;
+    padding:11px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .show-past:active{background:var(--svart-2)}
+
+  /* ---- Birta úrslit ---- */
+  .publish{
+    display:block;width:100%;
+    background:var(--gull);color:var(--svart);
+    border:none;border-radius:12px;padding:13px;
+    font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+  }
+  .publish:active{background:var(--gull-dökk)}
+  .publish-hint{font-size:11px;color:var(--grar);margin-top:7px;text-align:center;line-height:1.4}
+  .publish-hint b{color:var(--gull-dökk)}
+  .token-in{
+    width:100%;background:var(--svart-3);color:var(--hvitt);
+    border:1px solid var(--lina);border-radius:10px;padding:12px;
+    font-family:inherit;font-size:14px;
+  }
+  .token-in:focus{outline:none;border-color:var(--gull)}
+
+  /* ---- Vallakort ---- */
+  .btn-row{display:flex;gap:8px;margin-top:9px}
+  .map-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;flex:1;
+    background:var(--svart-2);color:var(--gull);
+    border:1px solid var(--lina);border-radius:12px;
+    padding:12px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+  }
+  .map-btn:active{background:var(--svart-3)}
+  .map-overlay{
+    position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.95);
+    display:none;flex-direction:column;
+  }
+  .map-overlay.open{display:flex}
+  .map-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;flex:0 0 auto;
+  }
+  .map-bar .mt{font-weight:700;font-size:15px;color:var(--hvitt)}
+  .map-close{
+    background:var(--gull);color:var(--svart);border:none;border-radius:999px;
+    width:34px;height:34px;font-size:18px;font-weight:800;cursor:pointer;line-height:1;
+  }
+  .map-scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 10px 16px}
+  .map-scroll img{width:100%;height:auto;border-radius:10px;display:block}
+  .map-hint{text-align:center;color:var(--grar);font-size:12px;padding:6px 16px 14px;flex:0 0 auto}
+  .map-hint a{color:var(--gull)}
+
+  footer{
+    text-align:center;margin-top:26px;font-size:12px;color:var(--grar);
+  }
+  footer a{color:var(--gull);text-decoration:none}
+  .hidden{display:none !important}
+
+  @media (prefers-reduced-motion:reduce){
+    .pulse{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="crest">ÍA</div>
+  <h1>ÍA<span class="un">-1</span></h1>
+  <div class="sub">Mótsdagskra · Króatia-deild · 19.–21. juni</div>
+</header>
+
+<div class="wrap">
+
+  <div id="next" class="next none">
+    <div class="eyebrow"><span class="pulse"></span> Næsti leikur</div>
+    <div class="vs" id="next-vs">—</div>
+    <div class="meta" id="next-meta"></div>
+    <div class="meta" id="next-meet" style="font-weight:800;color:var(--svart)"></div>
+    <div class="clock">
+      <span class="ctime" id="next-time"></span>
+      <span class="cdown" id="next-cd"></span>
+    </div>
+  </div>
+
+  <div id="upnext" class="upnext" style="display:none">
+    <span class="un-emoji" id="un-emoji">📅</span>
+    <div class="un-body">
+      <div class="un-lbl-sm">Næst á dagskrá</div>
+      <div class="un-title" id="un-title">—</div>
+    </div>
+    <div>
+      <div class="un-time" id="un-time"></div>
+      <div class="un-cd" id="un-cd"></div>
+    </div>
+  </div>
+
+  <div class="points">
+    <span class="pnum" id="s-pts">0</span>
+    <span class="plbl">stig</span>
+    <span class="phint">3 fyrir sigur<br>1 fyrir jafntefli</span>
+  </div>
+
+  <div class="summary">
+    <div class="stat w"><div class="num" id="s-w">0</div><div class="lbl">Sigrar</div></div>
+    <div class="stat d"><div class="num" id="s-d">0</div><div class="lbl">Jafntefli</div></div>
+    <div class="stat l"><div class="num" id="s-l">0</div><div class="lbl">Töp</div></div>
+  </div>
+  <div class="goals-line">Mörk samtals: <b id="s-goals">0–0</b></div>
+
+  <div class="refresh-row">
+    <button id="refresh" class="refresh"><span class="ico">↻</span> Uppfæra</button>
+  </div>
+
+  <div id="edit-tools" style="display:none;margin-top:10px">
+    <div id="token-box">
+      <div class="publish-hint" style="text-align:left;margin-bottom:8px">Límdu GitHub-lykilinn þinn inn (einu sinni). Hann geymist bara í þessum síma og fer aldrei inn í síðuna sem aðrir sjá.</div>
+      <input id="token-in" class="token-in" type="password" placeholder="GitHub lykill (github_pat_…)" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button id="save-token" class="publish" style="margin-top:8px">Vista lykil</button>
+    </div>
+    <div id="save-box" style="display:none">
+      <button id="gh-save" class="publish">⬆ Vista úrslit (beint í GitHub)</button>
+      <div id="save-status" class="publish-hint"></div>
+      <div class="publish-hint" style="margin-top:6px">
+        <a href="#" id="manual-dl" style="color:var(--grar)">Hlaða niður skrá í staðinn</a> ·
+        <a href="#" id="forget-token" style="color:var(--grar)">Gleyma lykli</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button id="map-btn" class="map-btn">🗺️ Vallakort</button>
+    <button id="share-btn" class="map-btn">📤 Deila</button>
+  </div>
+
+  <div class="filter">
+    <button id="f-games" class="on">Bara leikir</button>
+    <button id="f-all">Allt (matur ofl.)</button>
+  </div>
+
+  <div id="schedule"></div>
+
+  <div id="map-overlay" class="map-overlay">
+    <div class="map-bar">
+      <span class="mt">🗺️ Vallakort — Króatía-deild</span>
+      <button id="map-close" class="map-close">✕</button>
+    </div>
+    <div class="map-scroll"><img src="vellir.webp" alt="Vallakort"></div>
+    <div class="map-hint">Klíptu til að stækka · <a href="vellir.webp" target="_blank" rel="noopener">Opna í fullri stærð</a></div>
+  </div>
+
+  <footer>
+    Gangi ÍA-1 vel! ⚽<br>
+    Bein útsending á <a href="https://www.youtube.com/@iatv/streams" target="_blank" rel="noopener">ÍATV YouTube</a><br>
+    <a href="https://nm.kfia.is/deild/Kroatia/IA-1" target="_blank" rel="noopener">Opinber mótssíða</a> ·
+    <a href="https://www.yr.no/en/forecast/daily-table/2-3418653/Iceland/West/Akraneskaupsta%C3%B0ur/Akranes" target="_blank" rel="noopener">Veður á Akranesi 🌤️</a><br>
+    <a id="gh-link" href="https://github.com/eydisaegis/ia-mot/upload/main" target="_blank" rel="noopener" style="display:none;margin-top:8px;font-size:11px;opacity:.7">⬆ Uppfæra á GitHub</a>
+  </footer>
+</div>
+
+<script>
+const TV_URL = "https://www.youtube.com/@iatv/streams";
+
+// Birt úrslit — bökuð inn í skrána (þetta sjá allir). Uppfærist þegar þú "birtir".
+/*SCORES_START*/const PUBLISHED_SCORES = {};/*SCORES_END*/
+
+// Breytihamur: aðeins með #edit í slóð sjást skorreitir + birtingarhnappur.
+const EDIT = (location.hash + location.search).toLowerCase().includes('edit');
+
+// GitHub stillingar fyrir sjálfvirka vistun
+const GH = { owner:'eydisaegis', repo:'ia-mot', path:'index.html', branch:'main' };
+
+
+// Allir liðir. type: 'match' eða 'event'. home/away — ÍA-1 sýnt með gulu.
+const items = [
+  // Föstudagur 19. júní
+  {date:'2026-06-19', t:'11:00', type:'event', lbl:'Skrúðganga & setning', emoji:'🎏'},
+  {date:'2026-06-19', t:'15:00', type:'event', lbl:'Liðsmyndataka', emoji:'📸'},
+  {date:'2026-06-19', t:'15:45', type:'match', home:'Vestri', away:'ÍA-1', field:'Völlur 10'},
+  {date:'2026-06-19', t:'16:30', type:'match', home:'ÍA-1', away:'Snæfellsnes', field:'ÍA TV 1', tv:true},
+  {date:'2026-06-19', t:'17:15', type:'match', home:'ÍA-1', away:'Fjölnir-1', field:'Völlur 16'},
+  {date:'2026-06-19', t:'18:00', type:'match', home:'Reynir/Víðir', away:'ÍA-1', field:'Völlur 14'},
+  {date:'2026-06-19', t:'18:30', type:'event', lbl:'Kvöldmatur', emoji:'🍽️'},
+  // Laugardagur 20. júní
+  {date:'2026-06-20', t:'07:45', type:'event', lbl:'Morgunverður', emoji:'🥣'},
+  {date:'2026-06-20', t:'08:30', type:'match', home:'ÍA-1', away:'Fjölnir-3', field:'Völlur 13'},
+  {date:'2026-06-20', t:'09:15', type:'match', home:'KR-2', away:'ÍA-1', field:'Völlur 14'},
+  {date:'2026-06-20', t:'10:00', type:'match', home:'ÍA-1', away:'ÍA-2', field:'Völlur 12'},
+  {date:'2026-06-20', t:'10:45', type:'match', home:'Breiðablik-2', away:'ÍA-1', field:'Völlur 12'},
+  {date:'2026-06-20', t:'11:30', type:'match', home:'ÍA-1', away:'Breiðablik-1', field:'Völlur 14'},
+  {date:'2026-06-20', t:'12:15', type:'event', lbl:'Hádegismatur', emoji:'🍽️'},
+  {date:'2026-06-20', t:'18:00', type:'event', lbl:'Kvöldmatur', emoji:'🍽️'},
+  {date:'2026-06-20', t:'19:30', type:'event', lbl:'Kvöldskemmtun – VÆB & Luigi', emoji:'🎤'},
+  // Sunnudagur 21. júní
+  {date:'2026-06-21', t:'07:45', type:'event', lbl:'Morgunverður', emoji:'🥣'},
+  {date:'2026-06-21', t:'10:45', type:'event', lbl:'Hádegismatur', emoji:'🍽️'},
+  {date:'2026-06-21', t:'12:00', type:'match', home:'ÍA-1', away:'Haukar-2', field:'Völlur 15'},
+  {date:'2026-06-21', t:'12:45', type:'match', home:'Fjölnir-2', away:'ÍA-1', field:'Völlur 12'},
+  {date:'2026-06-21', t:'13:30', type:'match', home:'ÍA-1', away:'Afturelding', field:'Völlur 11'},
+  {date:'2026-06-21', t:'14:15', type:'match', home:'Álftanes', away:'ÍA-1', field:'Völlur 11'},
+];
+
+const dayNames = {
+  '2026-06-19':{n:'Föstudagur', d:'19. júní'},
+  '2026-06-20':{n:'Laugardagur', d:'20. júní'},
+  '2026-06-21':{n:'Sunnudagur', d:'21. júní'},
+};
+
+function toDate(it){
+  const [y,m,d] = it.date.split('-').map(Number);
+  const [hh,mm] = it.t.split(':').map(Number);
+  return new Date(y, m-1, d, hh, mm, 0);
+}
+// Áætlaður leiktími fyrir "í gangi núna" merkingu (mín.)
+const MATCH_LEN = 15;
+
+function isIA(it){ return it.home==='ÍA-1' || it.away==='ÍA-1'; }
+
+function opponent(it){
+  return it.home==='ÍA-1' ? it.away : it.home;
+}
+function heimaUti(it){ return it.home==='ÍA-1' ? 'Heima' : 'Úti'; }
+
+// Mæting 15 mín fyrir leik
+function meetTime(it){
+  const d = new Date(toDate(it).getTime() - 15*60000);
+  return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+}
+
+// ---- Úrslit: vistun í tækinu ----
+function matchId(it){ return it.date+'_'+it.t; }
+function loadScores(){
+  let local = {};
+  try{ local = JSON.parse(localStorage.getItem('ia1-scores')||'{}'); }catch(e){}
+  // Birt úrslit eru grunnur; staðbundnar breytingar (þínar) liggja yfir.
+  return Object.assign({}, PUBLISHED_SCORES, local);
+}
+function saveScores(s){ try{ localStorage.setItem('ia1-scores', JSON.stringify(s)); }catch(e){} }
+function findItem(id){ return items.find(i=> matchId(i)===id); }
+
+function resultOf(it, sc){
+  if(!sc || sc.h===''||sc.a===''||sc.h==null||sc.a==null) return null;
+  const h=parseInt(sc.h,10), a=parseInt(sc.a,10);
+  if(isNaN(h)||isNaN(a)) return null;
+  const ia  = it.home==='ÍA-1' ? h : a;
+  const opp = it.home==='ÍA-1' ? a : h;
+  if(ia>opp) return 'win';
+  if(ia<opp) return 'loss';
+  return 'draw';
+}
+const RES_TXT = {win:'Sigur', loss:'Tap', draw:'Jafntefli'};
+
+function renderSummary(){
+  const s = loadScores();
+  let w=0,d=0,l=0,gf=0,ga=0;
+  items.filter(i=>i.type==='match').forEach(it=>{
+    const sc = s[matchId(it)];
+    const r = resultOf(it, sc);
+    if(!r) return;
+    const h=parseInt(sc.h,10), a=parseInt(sc.a,10);
+    gf += it.home==='ÍA-1'?h:a;
+    ga += it.home==='ÍA-1'?a:h;
+    if(r==='win') w++; else if(r==='loss') l++; else d++;
+  });
+  document.getElementById('s-w').textContent=w;
+  document.getElementById('s-d').textContent=d;
+  document.getElementById('s-l').textContent=l;
+  document.getElementById('s-goals').textContent=`${gf}–${ga}`;
+  document.getElementById('s-pts').textContent = w*3 + d;
+}
+
+function updateChip(card, it){
+  const sc = loadScores()[matchId(it)];
+  const r = resultOf(it, sc);
+  const chip = card.querySelector('.result-chip');
+  if(!chip) return;
+  chip.className = 'result-chip '+(r||'');
+  chip.textContent = r ? RES_TXT[r] : '';
+  chip.style.display = r ? '' : 'none';
+}
+
+let showAll = false;
+let showPast = false;
+
+// Atriði liðið (búið)? Leikur telst liðinn 15 mín eftir byrjun.
+function isPast(it, now){
+  const start = toDate(it);
+  if(it.type==='match') return now > new Date(start.getTime()+MATCH_LEN*60000);
+  return now > start;
+}
+
+function render(){
+  const sched = document.getElementById('schedule');
+  sched.innerHTML = '';
+  const now = new Date();
+
+  // Hvað er liðið? (til að vita hvort sýna eigi "Sjá fyrri" hnapp)
+  let pastCount = 0;
+  items.forEach(i=>{
+    if(!showAll && i.type==='event') return;
+    if(isPast(i, now)) pastCount++;
+  });
+
+  if(pastCount>0){
+    const btn = document.createElement('button');
+    btn.className = 'show-past';
+    btn.textContent = showPast ? '▾ Fela fyrri' : `▸ Sjá fyrri (${pastCount})`;
+    btn.onclick = ()=>{ showPast = !showPast; render(); };
+    sched.appendChild(btn);
+  }
+
+  const days = [...new Set(items.map(i=>i.date))];
+  days.forEach(date=>{
+    let list = items.filter(i=>i.date===date);
+    if(!showAll) list = list.filter(i=>i.type==='match');
+    if(!showPast) list = list.filter(i=> !isPast(i, now));
+    if(list.length===0) return;
+
+    const matchCount = items.filter(i=>i.date===date && i.type==='match').length;
+
+    const dh = document.createElement('div');
+    dh.className='day-h';
+    dh.innerHTML = `<span class="dnum">${dayNames[date].d.split('.')[0]}.</span>
+      <span class="dname">${dayNames[date].n}</span>
+      <span class="count">${matchCount} leikir</span>`;
+    sched.appendChild(dh);
+
+    list.forEach(it=>{
+      const start = toDate(it);
+      if(it.type==='event'){
+        const ev = document.createElement('div');
+        ev.className='event';
+        ev.innerHTML = `<span class="time">${it.t}</span>
+          <span class="emoji">${it.emoji}</span>
+          <span class="lbl">${it.lbl}</span>`;
+        sched.appendChild(ev);
+        return;
+      }
+      const end = new Date(start.getTime()+MATCH_LEN*60000);
+      const done = now > end;
+      const liveNow = now>=start && now<=end;
+
+      const c = document.createElement('div');
+      c.className = 'card ia' + (done?' done':'') + (liveNow?' live-now':'');
+      const homeCls = it.home==='ÍA-1' ? 'me':'opp';
+      const awayCls = it.away==='ÍA-1' ? 'me':'opp';
+      const id = matchId(it);
+      const sc = (loadScores()[id]) || {h:'',a:''};
+      const r = resultOf(it, sc);
+      c.innerHTML = `
+        <span class="time">${it.t}</span>
+        <span class="div"></span>
+        <div class="body">
+          <div class="match"><span class="${homeCls}">${it.home}</span> – <span class="${awayCls}">${it.away}</span></div>
+          <div class="meet">⏱ Mæting kl. ${meetTime(it)}</div>
+          <div class="row2">
+            <span class="chip field">${it.field}</span>
+            <span class="chip">${heimaUti(it)}</span>
+            ${liveNow?'<span class="chip live">Í gangi</span>':''}
+          </div>
+          ${it.tv?`<a class="tv-btn" href="${TV_URL}" target="_blank" rel="noopener">▶ Horfa á ÍATV</a>`:''}
+          <div class="score">
+            <span class="score-lbl">Úrslit</span>
+            ${EDIT ? `
+            <input class="score-in" type="number" inputmode="numeric" min="0" max="99" data-id="${id}" data-side="h" value="${sc.h}" aria-label="Mörk ${it.home}">
+            <span class="score-sep">–</span>
+            <input class="score-in" type="number" inputmode="numeric" min="0" max="99" data-id="${id}" data-side="a" value="${sc.a}" aria-label="Mörk ${it.away}">
+            ` : `
+            <span class="score-static">${(sc.h!==''&&sc.h!=null)?sc.h:'–'} – ${(sc.a!==''&&sc.a!=null)?sc.a:'–'}</span>
+            `}
+            <span class="result-chip ${r||''}" style="${r?'':'display:none'}">${r?RES_TXT[r]:''}</span>
+          </div>
+        </div>`;
+      sched.appendChild(c);
+    });
+  });
+  renderSummary();
+}
+
+function updateNext(){
+  const now = new Date();
+  const matches = items.filter(i=>i.type==='match').map(i=>({...i, dt:toDate(i)}));
+  // leikur í gangi?
+  const live = matches.find(m=> now>=m.dt && now<=new Date(m.dt.getTime()+MATCH_LEN*60000));
+  const upcoming = matches.filter(m=>m.dt>now).sort((a,b)=>a.dt-b.dt)[0];
+
+  const box = document.getElementById('next');
+  const vs = document.getElementById('next-vs');
+  const meta = document.getElementById('next-meta');
+  const meet = document.getElementById('next-meet');
+  const time = document.getElementById('next-time');
+  const cd = document.getElementById('next-cd');
+  const eyebrow = box.querySelector('.eyebrow');
+
+  const target = live || upcoming;
+  if(!target){
+    box.classList.add('none');
+    eyebrow.innerHTML = 'Mótinu lokið';
+    vs.textContent = 'Takk fyrir helgina! 🎉';
+    meta.textContent = '';
+    meet.textContent = '';
+    time.textContent=''; cd.textContent='';
+    return;
+  }
+  box.classList.remove('none');
+  vs.textContent = `${target.home} – ${target.away}`;
+  meta.textContent = `${target.field} · ${heimaUti(target)} · ${dayNames[target.date].n}`;
+  meet.textContent = `⏱ Mæting kl. ${meetTime(target)}`;
+
+  if(live){
+    eyebrow.innerHTML = '<span class="pulse"></span> Leikur í gangi';
+    time.textContent = target.t;
+    cd.textContent = '— núna!';
+    return;
+  }
+  eyebrow.innerHTML = '<span class="pulse"></span> Næsti leikur';
+  time.textContent = target.t;
+  const diff = target.dt - now;
+  const h = Math.floor(diff/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  let txt;
+  if(h>0) txt = `eftir ${h} klst ${m} mín`;
+  else if(m>0) txt = `eftir ${m} mín`;
+  else txt = 'að byrja';
+  cd.textContent = txt;
+}
+
+// Næst á dagskrá — næsta atriði hvað sem það er (leikur, matur, myndataka)
+function updateUpNext(){
+  const now = new Date();
+  const all = items.map(i=>({...i, dt:toDate(i)}));
+  // næsta atriði sem er ekki búið (leikir teljast búnir eftir MATCH_LEN)
+  const next = all
+    .filter(i=>{
+      if(i.type==='match') return now < new Date(i.dt.getTime()+MATCH_LEN*60000);
+      return i.dt > now;
+    })
+    .sort((a,b)=>a.dt-b.dt)[0];
+
+  const box = document.getElementById('upnext');
+  if(!next){ box.style.display='none'; return; }
+  box.style.display='';
+
+  const isMatch = next.type==='match';
+  document.getElementById('un-emoji').textContent = isMatch ? '⚽' : (next.emoji||'📅');
+  document.getElementById('un-title').textContent = isMatch ? `${next.home} – ${next.away}` : next.lbl;
+  document.getElementById('un-time').textContent = next.t;
+
+  const cdEl = document.getElementById('un-cd');
+  const liveNow = isMatch && now>=next.dt && now<=new Date(next.dt.getTime()+MATCH_LEN*60000);
+  if(liveNow){ cdEl.textContent = 'núna!'; return; }
+  const diff = next.dt - now;
+  const h = Math.floor(diff/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  if(h>0) cdEl.textContent = `eftir ${h} klst ${m} mín`;
+  else if(m>0) cdEl.textContent = `eftir ${m} mín`;
+  else cdEl.textContent = 'að byrja';
+}
+
+function refreshAll(){
+  updateNext();
+  updateUpNext();
+  const ae = document.activeElement;
+  if(!(ae && ae.classList && ae.classList.contains('score-in'))) render();
+}
+
+document.getElementById('f-games').onclick = function(){
+  showAll=false; this.classList.add('on');
+  document.getElementById('f-all').classList.remove('on'); render();
+};
+document.getElementById('f-all').onclick = function(){
+  showAll=true; this.classList.add('on');
+  document.getElementById('f-games').classList.remove('on'); render();
+};
+
+// Skor: vista um leið og slegið er inn
+document.getElementById('schedule').addEventListener('input', function(e){
+  const inp = e.target;
+  if(!inp.classList || !inp.classList.contains('score-in')) return;
+  const id = inp.dataset.id, side = inp.dataset.side;
+  let v = inp.value.replace(/[^0-9]/g,'').slice(0,2);
+  inp.value = v;
+  const s = loadScores();
+  s[id] = s[id] || {h:'',a:''};
+  s[id][side] = v;
+  saveScores(s);
+  updateChip(inp.closest('.card'), findItem(id));
+  renderSummary();
+});
+
+// Uppfæra-hnappur
+document.getElementById('refresh').onclick = function(){
+  this.classList.remove('spin');
+  void this.offsetWidth; // endurræsa snúning
+  this.classList.add('spin');
+  refreshAll();
+};
+
+// Vallakort
+document.getElementById('map-btn').onclick = ()=> document.getElementById('map-overlay').classList.add('open');
+document.getElementById('map-close').onclick = ()=> document.getElementById('map-overlay').classList.remove('open');
+
+// Deila — alltaf hreina (opinbera) hlekkinn, ekki #edit
+document.getElementById('share-btn').onclick = function(){
+  const url = location.origin + location.pathname;
+  if(navigator.share){
+    navigator.share({ title:'ÍA-1 á Norðurálsmóti', text:'Dagskrá, úrslit og vallakort ÍA-1', url }).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=> alert('Hlekkur afritaður:\n'+url)).catch(()=> prompt('Afritaðu hlekkinn:', url));
+  } else {
+    prompt('Afritaðu hlekkinn:', url);
+  }
+};
+
+// ---- Birta úrslit ----
+// UTF-8 öruggt base64 (íslenskir stafir)
+function utf8ToB64(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin=''; const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){ bin += String.fromCharCode.apply(null, bytes.subarray(i,i+chunk)); }
+  return btoa(bin);
+}
+function b64ToUtf8(b64){
+  const bin = atob(b64.replace(/\s/g,''));
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function bakeScores(src){
+  const json = JSON.stringify(loadScores());
+  const newLine = `/*SCORES_START*/const PUBLISHED_SCORES = ${json};/*SCORES_END*/`;
+  return src.replace(/\/\*SCORES_START\*\/[\s\S]*?\/\*SCORES_END\*\//, newLine);
+}
+function status(msg){ const el=document.getElementById('save-status'); if(el) el.textContent=msg; }
+
+// Beint í GitHub með lyklinum
+async function saveToGitHub(){
+  const token = localStorage.getItem('ia1-gh-token');
+  if(!token){ status('Enginn lykill.'); return; }
+  const btn = document.getElementById('gh-save');
+  btn.disabled = true;
+  status('Vista í GitHub…');
+  try{
+    const base = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
+    const hdr = { Authorization:`Bearer ${token}`, Accept:'application/vnd.github+json' };
+    // 1) Sækja núverandi skrá (sha + innihald)
+    const g = await fetch(`${base}?ref=${GH.branch}&t=${Date.now()}`, {headers:hdr, cache:'no-store'});
+    if(!g.ok) throw new Error('Sækja '+g.status);
+    const data = await g.json();
+    const out = bakeScores(b64ToUtf8(data.content));
+    // 2) Skrifa uppfærða skrá
+    const p = await fetch(base, {
+      method:'PUT',
+      headers:{...hdr, 'Content-Type':'application/json'},
+      body: JSON.stringify({ message:'Uppfæra úrslit', content: utf8ToB64(out), sha: data.sha, branch: GH.branch })
+    });
+    if(!p.ok) throw new Error('Skrifa '+p.status);
+    status('✓ Vistað! Aðrir sjá það innan mínútu.');
+  }catch(e){
+    let m = e.message;
+    if(m.includes('401')||m.includes('403')) m = 'lykill rangur eða útrunninn';
+    if(m.includes('404')) m = 'finn ekki geymsluna (athugaðu lykil)';
+    status('Villa: '+m+'. Reyndu aftur eða notaðu niðurhal.');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+// Varaleið: hlaða niður skrá (ef GitHub-skrift bregst)
+function manualDownload(){
+  fetch(location.href, {cache:'no-store'}).then(r=>r.text()).then(src=>{
+    const blob = new Blob([bakeScores(src)], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='index.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    status('Skrá hlaðin niður — hladdu henni upp á GitHub handvirkt.');
+  }).catch(()=>status('Næ ekki í skrána. Ertu á github.io slóðinni?'));
+}
+
+function refreshTokenUI(){
+  const has = !!localStorage.getItem('ia1-gh-token');
+  document.getElementById('token-box').style.display = has ? 'none' : '';
+  document.getElementById('save-box').style.display = has ? '' : 'none';
+}
+
+// Sýna breytitól aðeins í breytiham
+if(EDIT){
+  document.getElementById('edit-tools').style.display = '';
+  const gh = document.getElementById('gh-link'); if(gh) gh.style.display = '';
+  refreshTokenUI();
+  document.getElementById('save-token').onclick = function(){
+    const v = document.getElementById('token-in').value.trim();
+    if(!v){ return; }
+    localStorage.setItem('ia1-gh-token', v);
+    document.getElementById('token-in').value='';
+    refreshTokenUI();
+    status('Lykill vistaður.');
+  };
+  document.getElementById('gh-save').onclick = saveToGitHub;
+  document.getElementById('manual-dl').onclick = function(e){ e.preventDefault(); manualDownload(); };
+  document.getElementById('forget-token').onclick = function(e){
+    e.preventDefault();
+    localStorage.removeItem('ia1-gh-token');
+    refreshTokenUI(); status('Lykli gleymt.');
+  };
+}
+
+render();
+updateNext();
+updateUpNext();
+// Endurhleður á 30 sek fresti — en ekki á meðan verið er að slá inn skor
+setInterval(refreshAll, 30000);
+</script>
+</body>
+</html>
