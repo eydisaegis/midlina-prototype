@@ -305,6 +305,18 @@
   .map-hint{text-align:center;color:var(--grar);font-size:12px;padding:6px 16px 14px;flex:0 0 auto}
   .map-hint a{color:var(--gull)}
 
+  /* ---- Veður ---- */
+  .weather{
+    display:flex;align-items:center;gap:12px;
+    background:var(--svart-2);border:1px solid var(--lina);
+    border-radius:14px;padding:12px 14px;margin-top:9px;
+  }
+  .w-emoji{font-size:26px}
+  .w-body{flex:1;min-width:0}
+  .w-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grar)}
+  .w-detail{font-size:13px;font-weight:600;color:var(--hvitt);margin-top:3px}
+  .w-temp{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;color:var(--gull);line-height:1}
+
   footer{
     text-align:center;margin-top:26px;font-size:12px;color:var(--grar);
   }
@@ -347,6 +359,15 @@
       <div class="un-time" id="un-time"></div>
       <div class="un-cd" id="un-cd"></div>
     </div>
+  </div>
+
+  <div id="weather" class="weather" style="display:none">
+    <span class="w-emoji" id="w-emoji">🌤️</span>
+    <div class="w-body">
+      <div class="w-lbl" id="w-lbl">Veður á Akranesi</div>
+      <div class="w-detail" id="w-detail">—</div>
+    </div>
+    <div class="w-temp" id="w-temp"></div>
   </div>
 
   <div class="points">
@@ -714,8 +735,70 @@ function updateUpNext(){
 function refreshAll(){
   updateNext();
   updateUpNext();
+  updateWeather();
   const ae = document.activeElement;
   if(!(ae && ae.classList && ae.classList.contains('score-in'))) render();
+}
+
+// ---- Veður (Open-Meteo, ókeypis, enginn lykill) ----
+const AKRANES = { lat:64.32, lon:-22.07 };
+let weatherData = null;
+
+function wmoInfo(code){
+  if(code===0) return ['☀️','Heiðskírt'];
+  if(code===1) return ['🌤️','Léttskýjað'];
+  if(code===2) return ['⛅','Skýjað með köflum'];
+  if(code===3) return ['☁️','Alskýjað'];
+  if(code===45||code===48) return ['🌫️','Þoka'];
+  if(code>=51&&code<=57) return ['🌦️','Súld'];
+  if(code>=61&&code<=67) return ['🌧️','Rigning'];
+  if(code>=71&&code<=77) return ['🌨️','Snjókoma'];
+  if(code>=80&&code<=82) return ['🌦️','Skúrir'];
+  if(code>=85&&code<=86) return ['🌨️','Snjóél'];
+  if(code>=95) return ['⛈️','Þrumuveður'];
+  return ['🌡️','—'];
+}
+
+function loadWeather(){
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${AKRANES.lat}&longitude=${AKRANES.lon}`
+    + `&hourly=temperature_2m,precipitation,wind_speed_10m,weather_code`
+    + `&wind_speed_unit=ms&timezone=auto&forecast_days=3`;
+  fetch(u).then(r=>{ if(!r.ok) throw new Error(); return r.json(); })
+    .then(d=>{ weatherData = d; updateWeather(); })
+    .catch(()=>{ /* sleppum — veðurhlekkur neðst er til vara */ });
+}
+
+function nearestHour(target){
+  const t = weatherData.hourly.time;
+  let best=-1, diff=Infinity;
+  for(let i=0;i<t.length;i++){
+    const d = Math.abs(new Date(t[i]) - target);
+    if(d<diff){ diff=d; best=i; }
+  }
+  return best;
+}
+
+function updateWeather(){
+  if(!weatherData) return;
+  const now = new Date();
+  const matches = items.filter(i=>i.type==='match').map(i=>({...i, dt:toDate(i)}));
+  const live = matches.find(m=> now>=m.dt && now<=new Date(m.dt.getTime()+MATCH_LEN*60000));
+  const upcoming = matches.filter(m=>m.dt>now).sort((a,b)=>a.dt-b.dt)[0];
+  const target = live ? live.dt : (upcoming ? upcoming.dt : now);
+  const i = nearestHour(target);
+  if(i<0) return;
+  const h = weatherData.hourly;
+  const [emoji, text] = wmoInfo(h.weather_code[i]);
+  document.getElementById('w-emoji').textContent = emoji;
+  document.getElementById('w-temp').textContent = Math.round(h.temperature_2m[i]) + '°';
+  document.getElementById('w-detail').textContent =
+    `${text} · vindur ${Math.round(h.wind_speed_10m[i])} m/s · úrkoma ${h.precipitation[i].toFixed(1)} mm`;
+  let lbl;
+  if(live) lbl = `Veður núna (leikur kl. ${live.t})`;
+  else if(upcoming) lbl = `Veður á tíma næsta leiks (kl. ${upcoming.t})`;
+  else lbl = 'Veður á Akranesi núna';
+  document.getElementById('w-lbl').textContent = lbl;
+  document.getElementById('weather').style.display = '';
 }
 
 document.getElementById('f-games').onclick = function(){
@@ -863,6 +946,7 @@ if(EDIT){
 render();
 updateNext();
 updateUpNext();
+loadWeather();
 // Endurhleður á 30 sek fresti — en ekki á meðan verið er að slá inn skor
 setInterval(refreshAll, 30000);
 </script>
